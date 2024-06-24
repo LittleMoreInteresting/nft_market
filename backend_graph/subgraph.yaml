@@ -1,0 +1,32 @@
+specVersion: 1.0.0
+indexerHints:
+  prune: auto
+schema:
+  file: ./schema.graphql
+dataSources:
+  - kind: ethereum
+    name: OBToken
+    network: sepolia
+    source:
+      address: "0xf91898Eb6c134E421cdEE59Eb41031FBeD5a5d84"
+      abi: OBToken
+      startBlock: 6153930
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - Approval
+        - EIP712DomainChanged
+        - Transfer
+      abis:
+        - name: OBToken
+          file: ./abis/OBToken.json
+      eventHandlers:
+        - event: Approval(indexed address,indexed address,uint256)
+          handler: handleApproval
+        - event: EIP712DomainChanged()
+          handler: handleEIP712DomainChanged
+        - event: Transfer(indexed address,indexed address,uint256)
+          handler: handleTransfer
+      file: ./src/ob-token.ts

@@ -146,7 +146,7 @@ export default function SellBox({
             >
                 <ModalContent>
                     <>
-                        <ModalHeader className="flex flex-col gap-1">Sell {name}</ModalHeader>
+                        <ModalHeader className="flex flex-col gap-1">Sell NFT #{tokenId}</ModalHeader>
                         <ModalBody>
                             {imageURI ? (<Image
                                 className="object-cover rounded-xl"
