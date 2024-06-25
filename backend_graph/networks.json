@@ -3,6 +3,14 @@
     "OBToken": {
       "address": "0xf91898Eb6c134E421cdEE59Eb41031FBeD5a5d84",
       "startBlock": 6153930
+    },
+    "Horace": {
+      "address": "0x43CBe3CB4f095D1d7230e427aA4582638B2BF1A8",
+      "startBlock": 6154042
+    },
+    "NFTMarket": {
+      "address": "0x35D7A0A429f9fe06D79Ac351E1DAcC8d8B228914",
+      "startBlock": 6154225
     }
   }
 }

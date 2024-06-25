@@ -26,7 +26,7 @@ import {
   } from '@rainbow-me/rainbowkit/wallets';
 import {NextUIProvider} from "@nextui-org/react";
 import {useRouter} from 'next/navigation'
-import { injected  } from 'wagmi/connectors'
+import { ApolloClient, InMemoryCache, ApolloProvider } from '@apollo/client';
 const { wallets } = getDefaultWallets();
 const projectId = process.env.NEXT_PUBLIC_WALLET_CONNECT_PROJECT_ID as string;
 const httpSepolia = process.env.NEXT_PUBLIC_ALCHEMY_HTTP_SEPOLIA as string
@@ -59,6 +59,11 @@ const config = getDefaultConfig({
   
 });
 const queryClient = new QueryClient()
+const APIURL= process.env.NEXT_PUBLIC_APIURL!;
+const Apolloclient = new ApolloClient({
+  uri: APIURL,
+  cache: new InMemoryCache(),
+});
 
 export function ContextProvider({children,initialState}: {
     children: ReactNode
@@ -71,7 +76,9 @@ export function ContextProvider({children,initialState}: {
             <QueryClientProvider client={queryClient}>
                 <RainbowKitProvider>
                     <NextUIProvider navigate={router.push}>
+                        <ApolloProvider client={Apolloclient}>
                         {children}
+                        </ApolloProvider>
                     </NextUIProvider>
                 </RainbowKitProvider>
             </QueryClientProvider>

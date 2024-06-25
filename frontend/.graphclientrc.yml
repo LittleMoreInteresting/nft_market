@@ -1,0 +1,8 @@
+# .graphclientrc.yml
+sources:
+  - name: nftmarket
+    handler:
+      graphql:
+        endpoint: https://api.studio.thegraph.com/query/80582/nftmarket/version/latest
+documents:
+  - ./graphql/transfer.graphql

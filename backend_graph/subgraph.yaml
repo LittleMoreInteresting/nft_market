@@ -23,10 +23,55 @@ dataSources:
         - name: OBToken
           file: ./abis/OBToken.json
       eventHandlers:
-        - event: Approval(indexed address,indexed address,uint256)
-          handler: handleApproval
-        - event: EIP712DomainChanged()
-          handler: handleEIP712DomainChanged
         - event: Transfer(indexed address,indexed address,uint256)
           handler: handleTransfer
       file: ./src/ob-token.ts
+  - kind: ethereum
+    name: Horace
+    network: sepolia
+    source:
+      address: "0x43CBe3CB4f095D1d7230e427aA4582638B2BF1A8"
+      abi: Horace
+      startBlock: 6154042
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - HoraceApproval
+        - ApprovalForAll
+        - OwnershipTransferred
+        - HoraceTransfer
+      abis:
+        - name: Horace
+          file: ./abis/Horace.json
+      eventHandlers:
+        - event: Transfer(indexed address,indexed address,indexed uint256)
+          handler: handleTransfer
+      file: ./src/horace.ts
+  - kind: ethereum
+    name: NFTMarket
+    network: sepolia
+    source:
+      address: "0x35D7A0A429f9fe06D79Ac351E1DAcC8d8B228914"
+      abi: NFTMarket
+      startBlock: 6154225
+    mapping:
+      kind: ethereum/events
+      apiVersion: 0.0.7
+      language: wasm/assemblyscript
+      entities:
+        - BuyNFT
+        - CancelListing
+        - NftListed
+      abis:
+        - name: NFTMarket
+          file: ./abis/NFTMarket.json
+      eventHandlers:
+        - event: BuyNFT(indexed address,indexed address,indexed uint256,uint256)
+          handler: handleBuyNFT
+        - event: CancelListing(indexed address,indexed address,indexed uint256)
+          handler: handleCancelListing
+        - event: NftListed(indexed address,indexed address,indexed uint256,uint256,uint256)
+          handler: handleNftListed
+      file: ./src/nft-market.ts
