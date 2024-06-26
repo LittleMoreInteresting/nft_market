@@ -3,7 +3,7 @@ import {Button, Card, CardBody, CardHeader, Skeleton, useDisclosure} from "@next
 import React, {useState} from "react";
 import {getNftData} from "@/app/lib/api/action";
 import {type BaseError, useAccount, useChainId, useWaitForTransactionReceipt, useWriteContract} from "wagmi";
-import { waitForTransactionReceipt } from '@wagmi/core'
+import { waitForTransactionReceipt,readContract } from '@wagmi/core'
 import {parseUnits, parseEther} from 'viem'
 import {truncateStr} from "@/app/lib/utils/utils"
 import {useQuery} from "@tanstack/react-query";
@@ -37,6 +37,36 @@ export default function NFTBox(nftInfo:nftInfo) {
         },
         retry:1,
     })
+
+    const {
+        data: sellHash,
+        error: sellError,
+        writeContract:listNft
+    } = useWriteContract({
+        mutation:{
+            onSuccess:async (hash, variables) => {
+                const listReceipt = await waitForTransactionReceipt(wagmiConfig,
+                    {hash});
+                if (listReceipt.status==="success"){
+                    toast.success("list nft success")
+                    onClose()
+                }
+            }
+        }
+    })
+
+    async function handleApproveSuccess(nftAddress:string,tokenId:string,price:string){
+        const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
+        const tokenIdInt = parseUnits(tokenId,0)
+        listNft({
+            account: address,
+            address:marketplaceAddress as `0x${string}`,
+            abi:marketAbi,
+            functionName: 'list',
+            args: [nftAddress as `0x${string}`, parseEther(price,'wei'),tokenIdInt],
+        })
+    }
+
     const {
         data: approveHash,
         error,
@@ -53,7 +83,7 @@ export default function NFTBox(nftInfo:nftInfo) {
                         const tokenId = variables.args[1];
                         console.log(nftAddress,"nftAddress:"+tokenId);
                         console.log("token",tokenId);
-                        handleApproveSuccess(
+                        await handleApproveSuccess(
                             nftAddress!.toString(),
                             tokenId!.toString(),
                             price
@@ -75,43 +105,30 @@ export default function NFTBox(nftInfo:nftInfo) {
             toast.error("price must be greater than 0");
             return
         }
-        const address = getNftAddrByNetworkId(chainId.toString())
+        const nftaddress = getNftAddrByNetworkId(chainId.toString())
         const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
         const tokenId = parseUnits(nftInfo.tokenId,0)
+        //getApproved
+        const addr = await readContract(wagmiConfig,{
+            address: nftaddress as `0x${string}`,
+            abi:nftAbi,
+            functionName: 'getApproved',
+            args: [tokenId],
+            account:address
+        })
+        if (addr === marketplaceAddress){
+            console.log("ok",nftaddress)
+            await handleApproveSuccess(nftaddress,tokenId.toString(),price)
+            return;
+        }
         approve({
-            address: address as `0x${string}`,
+            address: nftaddress as `0x${string}`,
             abi:nftAbi,
             functionName: 'approve',
             args: [marketplaceAddress as `0x${string}`, tokenId],
         })
     }
-    const {
-        data: sellHash,
-        error: sellError,
-        writeContract:listNft
-    } = useWriteContract({
-        mutation:{
-            onSuccess:async (hash, variables) => {
-                const listReceipt = await waitForTransactionReceipt(wagmiConfig,
-                    {hash});
-                if (listReceipt.status==="success"){
-                    toast.success("list nft success")
-                }
-            }
-        }
-    })
-
-    async function handleApproveSuccess(nftAddress:string,tokenId:string,price:string){
-        const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
-        const tokenIdInt = parseUnits(tokenId,0)
-        listNft({
-            account: address,
-            address:marketplaceAddress as `0x${string}`,
-            abi:marketAbi,
-            functionName: 'list',
-            args: [nftAddress as `0x${string}`, parseEther(price,'wei'),tokenIdInt],
-        })
-    }
+    
 
     return(<>
         <>
@@ -151,7 +168,6 @@ export default function NFTBox(nftInfo:nftInfo) {
                     imageURI={data?.imageURI}
                     onConfirm={async ()=>{
                         await  nftApprove()
-                        onClose()
                     }}
                     onPriceChange={value => setPrice(value)}
                 />

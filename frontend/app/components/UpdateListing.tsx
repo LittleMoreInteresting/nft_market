@@ -10,7 +10,7 @@ import { ethers } from "ethers";
 import Image from "next/image";
 import {useContractWrite, useAccount, useChainId} from "wagmi";
 import { Narrow, Abi } from "abitype";
-import {waitForTransaction, waitForTransactionReceipt} from "@wagmi/core";
+import {waitForTransaction,watchContractEvent, waitForTransactionReceipt} from "@wagmi/core";
 import {wagmiConfig} from "@/app/context/config";
 import {marketAbi} from "@/constants/NFTMarket.abi";
 export interface UpdateListing {
@@ -80,10 +80,10 @@ export const UpdateListing = ({
     const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
     cancelListing({
       address: marketplaceAddress as `0x${string}`,
-      abi: marketAbi as Narrow<Abi>,
-      functionName: "cancelList",
+      abi: marketAbi,
+      functionName: "cancel",
       account: address,
-      args: [nftAddress, tokenId],
+      args: [nftAddress as `0x${string}`, BigInt(tokenId)],
     })
   }
   const {
@@ -109,13 +109,13 @@ export const UpdateListing = ({
     const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
     updateListing({
       address: marketplaceAddress as `0x${string}`,
-      abi: marketAbi as Narrow<Abi>,
-      functionName: "updateListing",
+      abi: marketAbi,
+      functionName: "update",
       account: address,
-      args: [nftAddress, tokenId,parseEther(priceToUpdateListingWith || "0","wei")],
+      args: [nftAddress as `0x${string}`, BigInt(tokenId),parseEther(priceToUpdateListingWith || "0","wei")],
     })
   }
-
+  
   return (
     <Modal
       isOpen={isVisible}
@@ -151,11 +151,11 @@ export const UpdateListing = ({
             ) : (
               <Skeleton className="w-5/6 rounded-lg" />
             )}
-            <div className="font-bold">{currentPrice} ETH</div>
+            <div className="font-bold">{currentPrice} OBT</div>
           </div>
           <Input
               className="px-4"
-            label="Update listing price in L1 Currency (ETH)"
+            label="Update listing price in L1 Currency (OBT)"
             name="New listing price"
             onChange={(event: React.ChangeEvent<HTMLInputElement>) => {
               setPriceToUpdateListingWith(event.target.value);

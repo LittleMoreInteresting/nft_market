@@ -46,8 +46,9 @@ export default function NFTBox({
         },
         retry:1,
     })
+    console.log("price",price)
     const isOwnedByUser =
-        seller === address || seller === undefined;
+        seller === address?.toLowerCase() || seller === undefined;
     const formattedSellerAddress = isOwnedByUser
         ? "you"
         : truncateStr(seller || "", 15);
@@ -69,7 +70,7 @@ export default function NFTBox({
         }
     })
     async function buy(){
-        const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
+        const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString());
         const obtAddress = getTokenAddrByNetworkId(chainId.toString())
         const deadline = Math.floor(Date.now() / 1000) + 60 * 10;
         const [,name,version,cid,vAddr] = await readContract(wagmiConfig,{

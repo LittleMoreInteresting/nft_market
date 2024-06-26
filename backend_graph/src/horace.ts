@@ -1,3 +1,4 @@
+import { Address, BigInt } from "@graphprotocol/graph-ts"
 import {
   Approval as ApprovalEvent,
   ApprovalForAll as ApprovalForAllEvent,
@@ -6,6 +7,7 @@ import {
 } from "../generated/Horace/Horace"
 import {
   HoraceTransfer,
+  TokenOwner,
 } from "../generated/schema"
 
 export function handleTransfer(event: TransferEvent): void {
@@ -21,4 +23,16 @@ export function handleTransfer(event: TransferEvent): void {
   entity.transactionHash = event.transaction.hash
 
   entity.save()
+  updateTokenOwner(event.params.from,event.params.to,event.params.tokenId,event.block.timestamp);
+}
+
+function updateTokenOwner(from:Address,to:Address,tokenId:BigInt,timestamp:BigInt):void {
+  let tokenOwner = TokenOwner.load(tokenId.toHex())
+    if (!tokenOwner) {
+      tokenOwner = new TokenOwner(tokenId.toString())
+    }
+    tokenOwner.from = from;
+    tokenOwner.owner = to;
+    tokenOwner.blockTimestamp = timestamp
+    tokenOwner.save()
 }

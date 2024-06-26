@@ -69,7 +69,7 @@ export default function SellNftBox({
                                 label="Price"
                                 placeholder="0.00001"
                                 variant="bordered"
-                                endContent="ETH"
+                                endContent="OBT"
                                 value={currentPrice}
                                 type="number"
                                 onValueChange={onPriceChange}

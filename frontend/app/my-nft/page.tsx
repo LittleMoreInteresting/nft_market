@@ -1,6 +1,6 @@
 'use client'
 
-import React, {useEffect, useState} from "react";
+import React, {useMemo, useState} from "react";
 import {
     Button,
     Input,
@@ -20,7 +20,7 @@ import {
 } from "wagmi";
 import { toast } from 'sonner'
 import  { GetSelfNftList } from "@/app/lib/api/action";
-import { useQuery } from '@tanstack/react-query'
+// import { useQuery } from '@tanstack/react-query'
 import NFTBox from "@/app/ui/nft-box/NFTBox"
 import {nftAbi} from "@/constants/HoraceNft.abi"
 import { getNftAddrByNetworkId } from '@/app/lib/utils/getAddrByNetwork'
@@ -29,6 +29,8 @@ import SellPriceBox from "@/app/ui/nft-box/Sell";
 import {PressEvent} from "@react-types/shared";
 import {waitForTransactionReceipt} from "@wagmi/core";
 import {wagmiConfig} from "@/app/context/config";
+import { useQuery } from '@apollo/client';
+import { tokensQuery } from '@/app/lib/api/thegraph'
 export default function MyNFT() {
     const { address,isConnected } = useAccount();
     const chainId = useChainId();
@@ -48,11 +50,21 @@ export default function MyNFT() {
             return []
         }
     }
-    var query = useQuery({
-        queryKey:[address,chainId],
-        queryFn:selfList,
-        enabled:isConnected
+    // var query = useQuery({
+    //     queryKey:[address,chainId],
+    //     queryFn:selfList,
+    //     enabled:isConnected
+    // });
+    const [pageSize,setPageSize] = useState(20)
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSkip = useMemo(()=>{
+        return pageSize *(currentPage-1)
+    },[pageSize,currentPage])
+    const { loading, error:qe, data } = useQuery(tokensQuery,{
+        variables:{owner:address,pageSize:pageSize,pageSkip:pageSkip},
     });
+    
+    const nftAddress = getNftAddrByNetworkId(chainId.toString())
     // mint nft
     const {
         data: hash,
@@ -83,7 +95,6 @@ export default function MyNFT() {
             toast.error("Not connected.")
             return
         }
-        const nftAddress = getNftAddrByNetworkId(chainId.toString())
         writeContract({
             address: nftAddress as `0x${string}`,
             abi:nftAbi,
@@ -92,7 +103,7 @@ export default function MyNFT() {
         })
     }
 
-
+    
     return (
 
         <>
@@ -103,14 +114,15 @@ export default function MyNFT() {
                 </div>
 
                 <div className="flex flex-wrap">
-                {query.data? (
-                    query.data.map((nft:any) => {
-                        const {id, nftAddress, chainId, tokenId, owner,from} = nft;
+                {!loading && data ? (
+                    data.tokenOwners.map((nft:any) => {
+                        const {id, from} = nft;
+                        
                         return (
                             <div className="m-2" key={id}>
                             <NFTBox
-                                tokenId={tokenId}
-                                chainId={chainId}
+                                tokenId={id}
+                                chainId={chainId.toString()}
                                 nftAddress={nftAddress}
                                 buyFrom={from}
                             />
@@ -124,6 +136,26 @@ export default function MyNFT() {
                     </div>
                 )}
                 </div>
+      <div className="flex flex-col gap-5">
+      <div className="flex gap-2">
+        <Button
+          size="sm"
+          variant="flat"
+          color="secondary"
+          onPress={() => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev))}
+        >
+          Previous
+        </Button>
+        <Button
+          size="sm"
+          variant="flat"
+          color="secondary"
+          onPress={() => setCurrentPage((prev) => (prev < 10 ? prev + 1 : prev))}
+        >
+          Next
+        </Button>
+      </div>
+    </div>
             </div>
         </>
     )

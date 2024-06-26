@@ -1,12 +1,14 @@
 'use client'
-import React, {useState, useEffect, useRef} from "react";
+import React, {useState, useEffect, useMemo} from "react";
 import { useAccount, useChainId } from "wagmi";
 
 import API from "@/app/lib/api/action";
 import NFTBox from "@/app/components/NFTBox";
 import SellBox from "@/app/components/SellBox";
-import SellPriceBox from "@/app/ui/nft-box/Sell";
-import {useQuery} from "@tanstack/react-query";
+
+// import {useQuery} from "@tanstack/react-query";
+import { useQuery } from '@apollo/client';
+import { listQuery } from '@/app/lib/api/thegraph'
 import {Button,useDisclosure} from "@nextui-org/react";
 import {getNftMarketAddrByNetworkId} from "@/app/lib/utils/getAddrByNetwork";
 export default function Home() {
@@ -16,20 +18,22 @@ export default function Home() {
     const chainId = useChainId();
     const {isOpen,onOpen,onClose} = useDisclosure();
     const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
-    const getListedNfts = async () => {
-
-        const response = await API.getListedNftPage(1, 10,marketplaceAddress);
-        var resData = response.data;
-        if (resData && resData.length > 0) {
-            return resData
-        } else {
-            return [];
-        }
-    };
-    var query = useQuery({
-        queryKey:[address,chainId],
-        queryFn:getListedNfts
+    
+    // var query = useQuery({
+    //     queryKey:[address,chainId],
+    //     queryFn:getListedNfts
+    // });
+    const [pageSize,setPageSize] = useState(20)
+    const [currentPage, setCurrentPage] = useState(1);
+    const pageSkip = useMemo(()=>{
+        return pageSize *(currentPage-1)
+    },[pageSize,currentPage])
+    const { loading, error:qe, data,refetch } = useQuery(listQuery,{
+        variables:{status:1,pageSize:pageSize,pageSkip:pageSkip},
     });
+    const getListedNfts = async () => {
+        refetch()
+    };
     useEffect(() => {
         //@ts-ignore
         if (typeof window.ethereum !== "undefined") {
@@ -48,9 +52,9 @@ export default function Home() {
                 
             </div>
             <div className="flex flex-wrap">
-                {isWeb3Enabled ? (
-                    query.data && query.data.length > 0 ? (
-                        query.data.map((nft: any) => {
+                {!loading && data ? (
+                    data.nftListings && data.nftListings.length > 0 ? (
+                        data.nftListings .map((nft: any) => {
                             const {price, nftAddress, tokenId, marketPlaceAddress, seller} =
                                 nft;
                             return (

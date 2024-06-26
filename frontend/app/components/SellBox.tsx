@@ -14,7 +14,7 @@ import Image from "next/image";
 import  {getNftData} from "@/app/lib/api/action";
 import { toast } from "sonner"
 import {type BaseError, useAccount, useChainId,  useWriteContract} from "wagmi";
-import { waitForTransactionReceipt } from '@wagmi/core'
+import { waitForTransactionReceipt,readContract } from '@wagmi/core'
 import {parseUnits, parseEther} from 'viem'
 import {getNftAddrByNetworkId, getNftMarketAddrByNetworkId} from "@/app/lib/utils/getAddrByNetwork";
 import {nftAbi} from "@/constants/HoraceNft.abi";
@@ -71,11 +71,23 @@ export default function SellBox({
             toast.error("price must be greater than 0");
             return
         }
-        const address = getNftAddrByNetworkId(chainId.toString())
+        const nftaddress = getNftAddrByNetworkId(chainId.toString())
         const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString())
-        
+        //getApproved
+        const addr = await readContract(wagmiConfig,{
+            address: nftaddress as `0x${string}`,
+            abi:nftAbi,
+            functionName: 'getApproved',
+            args: [BigInt(tokenId)],
+            account:address
+        })
+        if (addr === marketplaceAddress){
+            console.log("ok",nftaddress)
+            await handleApproveSuccess(nftaddress,tokenId.toString(),price)
+            return;
+        }
         approve({
-            address: address as `0x${string}`,
+            address: nftaddress as `0x${string}`,
             abi:nftAbi,
             functionName: 'approve',
             args: [marketplaceAddress as `0x${string}`, parseUnits(tokenId,0)],
@@ -94,6 +106,10 @@ export default function SellBox({
                     toast.success("list nft success")
                     onClose()
                 }
+            },
+            onError:(error) => {
+                toast.error("Error: "+((error as BaseError).shortMessage || error.message))
+                onClose()
             }
         }
     })
