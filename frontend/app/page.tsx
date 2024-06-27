@@ -9,7 +9,7 @@ import SellBox from "@/app/components/SellBox";
 // import {useQuery} from "@tanstack/react-query";
 import { useQuery } from '@apollo/client';
 import { listQuery } from '@/app/lib/api/thegraph'
-import {Button,useDisclosure} from "@nextui-org/react";
+import {Button,useDisclosure,Spinner} from "@nextui-org/react";
 import {getNftMarketAddrByNetworkId} from "@/app/lib/utils/getAddrByNetwork";
 export default function Home() {
     const [listedNfts, setListedNfts] = useState([]);
@@ -78,8 +78,28 @@ export default function Home() {
                         </div>
                     )
                 ) : (
-                    <div>Web3 Currently Not Enabled</div>
+                    <div><Spinner label="Loading..." color="warning" /></div>
                 )}
+            </div>
+            <div className="flex flex-col gap-5">
+            <div className="flex gap-2">
+                <Button
+                size="sm"
+                variant="flat"
+                color="secondary"
+                onPress={() => setCurrentPage((prev) => (prev > 1 ? prev - 1 : prev))}
+                >
+                Previous
+                </Button>
+                <Button
+                size="sm"
+                variant="flat"
+                color="secondary"
+                onPress={() => setCurrentPage((prev) => (prev < 10 ? prev + 1 : prev))}
+                >
+                Next
+                </Button>
+            </div>
             </div>
             <div className="flex justify-center">
                 <SellBox

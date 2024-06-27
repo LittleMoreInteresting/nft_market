@@ -156,8 +156,8 @@ export default function NFTBox({
                         className="object-cover rounded-xl"
                         loader={ ({ src, width, quality }) => data?.imageURI}
                         src={data?.imageURI}
-                        height="270"
-                        width="270"
+                        height="260"
+                        width="260"
                     />):""}
                     </Skeleton>
                 </CardBody>
