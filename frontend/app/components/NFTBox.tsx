@@ -15,6 +15,7 @@ import { signTypedData,readContract,getAccount } from '@wagmi/core'
 import {getNftMarketAddrByNetworkId,getTokenAddrByNetworkId} from "@/app/lib/utils/getAddrByNetwork";
 import {UpdateListing} from "@/app/components/UpdateListing";
 import { tokenAbi } from "@/constants/OBToken.abi"
+import { UserRejectedRequestError } from 'viem'
 
 export default function NFTBox({
        price,
@@ -34,7 +35,7 @@ export default function NFTBox({
     blockTimestamp:number;
 }) {
     const [showModal, setShowModal] = useState(false);
-    const { address, isConnected } = useAccount();
+    const { address, isConnected,connector } = useAccount();
     const chainId = useChainId();
     const hideModal = () => setShowModal(false);
     const {data,isLoading} = useQuery({
@@ -86,41 +87,46 @@ export default function NFTBox({
             args:[address as `0x{string}`]
         })
          
-        const { connector } = getAccount(wagmiConfig)
-        const sign = await signTypedData(wagmiConfig,{
-            account:address,
-            connector:connector,
-            domain:{
-                name:name,
-                version:version,
-                chainId:Number(cid),
-                verifyingContract:vAddr
-            },
-            types:{
-                Permit: [
-                    { name: "owner", type: "address" },
-                    { name: "spender", type: "address" },
-                    { name: "value", type:"uint256"},
-                    { name: "nonce", type: "uint256" },
-                    { name: "deadline", type: "uint256" }
-                ]
-            },
-            message:{
-                owner:address as `0x{string}`,
-                spender:marketplaceAddress,
-                value:parseUnits(price,0),
-                nonce:nonce,
-                deadline:BigInt(deadline)
-            },
-            primaryType:"Permit",
-        })
-        buynft({
-            account: address,
-            address:marketplaceAddress as `0x${string}`,
-            abi:marketAbi,
-            functionName: 'permitBuy',
-            args: [nftAddress as `0x${string}`, parseUnits(tokenId.toString(),0),parseUnits(price,0),BigInt(deadline),sign],
-        })
+        // const { connector } = getAccount(wagmiConfig)
+        try {
+            const sign = await signTypedData(wagmiConfig,{
+                account:address,
+                connector:connector,
+                domain:{
+                    name:name,
+                    version:version,
+                    chainId:Number(cid),
+                    verifyingContract:vAddr
+                },
+                types:{
+                    Permit: [
+                        { name: "owner", type: "address" },
+                        { name: "spender", type: "address" },
+                        { name: "value", type:"uint256"},
+                        { name: "nonce", type: "uint256" },
+                        { name: "deadline", type: "uint256" }
+                    ]
+                },
+                message:{
+                    owner:address as `0x{string}`,
+                    spender:marketplaceAddress,
+                    value:parseUnits(price,0),
+                    nonce:nonce,
+                    deadline:BigInt(deadline)
+                },
+                primaryType:"Permit",
+            })
+            buynft({
+                account: address,
+                address:marketplaceAddress as `0x${string}`,
+                abi:marketAbi,
+                functionName: 'permitBuy',
+                args: [nftAddress as `0x${string}`, parseUnits(tokenId.toString(),0),parseUnits(price,0),BigInt(deadline),sign],
+            })
+        } catch(error){
+            console.log(error)
+            toast.error("Error: "+((error as UserRejectedRequestError).shortMessage || "error"))
+        }
     }
     // buy end
     // Edit

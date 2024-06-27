@@ -22,7 +22,7 @@ import {  watchAsset } from 'viem/actions'
  
 
 export default function Faucet(){
-    const { address,isConnected } = useAccount();
+    const { address,isConnected,connector } = useAccount();
     const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
     const chainId = useChainId();
     const [balance,setBalance] = useState("0")
@@ -37,20 +37,22 @@ export default function Faucet(){
     });
     
     const watchAssetERC20 = async (addr:`0x${string}`,symbol:string,decimals?:number) =>{
-        const { connector } = getAccount(wagmiConfig)
-        console.log(connector)
         const walletClient = await getConnectorClient(wagmiConfig,{
             account:address,
             connector:connector,
         })
-        await watchAsset(walletClient,{ 
-            type: 'ERC20',
-            options: {
-            address: addr,
-            decimals: decimals?decimals:18,
-            symbol: symbol,
-            },
-        })
+        try {
+            await watchAsset(walletClient,{ 
+                type: 'ERC20',
+                options: {
+                address: addr,
+                decimals: decimals?decimals:18,
+                symbol: symbol,
+                },
+            })
+        } catch (error) {
+            console.log(error)
+        }
       } 
     const getAccountBalance = async ()=>{
         const balance = await getBalance(wagmiConfig, {
