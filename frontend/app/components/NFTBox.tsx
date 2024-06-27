@@ -72,6 +72,10 @@ export default function NFTBox({
         }
     })
     async function buy(){
+        if (!isConnected){
+            toast.error("Not connected.")
+            return
+        }
         const marketplaceAddress = getNftMarketAddrByNetworkId(chainId.toString());
         const obtAddress = getTokenAddrByNetworkId(chainId.toString())
         const deadline = Math.floor(Date.now() / 1000) + 60 * 10;

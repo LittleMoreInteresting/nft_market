@@ -25,8 +25,6 @@ import NFTBox from "@/app/ui/nft-box/NFTBox"
 import {nftAbi} from "@/constants/HoraceNft.abi"
 import { getNftAddrByNetworkId } from '@/app/lib/utils/getAddrByNetwork'
 
-import SellPriceBox from "@/app/ui/nft-box/Sell";
-import {PressEvent} from "@react-types/shared";
 import {waitForTransactionReceipt} from "@wagmi/core";
 import {wagmiConfig} from "@/app/context/config";
 import { useQuery } from '@apollo/client';
