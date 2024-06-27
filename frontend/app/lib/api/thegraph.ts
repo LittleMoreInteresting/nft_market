@@ -39,6 +39,7 @@ export const listQuery = gql`
             tokenId
             price
             status
+            blockTimestamp
         }
   }
 `

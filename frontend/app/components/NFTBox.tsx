@@ -6,7 +6,7 @@ import { useState, useEffect } from "react";
 import { toast } from "sonner"
 import {type BaseError, useAccount, useChainId, useWriteContract} from "wagmi";
 import API, {getNftData} from "@/app/lib/api/action";
-import { truncateStr } from "@/app/lib/utils/utils"
+import { truncateStr,formatTimestamp } from "@/app/lib/utils/utils"
 import {useQuery} from "@tanstack/react-query";
 import {waitForTransactionReceipt} from "@wagmi/core";
 import {wagmiConfig} from "@/app/context/config";
@@ -23,6 +23,7 @@ export default function NFTBox({
        marketPlaceAddress,
        seller,
        getListedNfts,
+       blockTimestamp
    }: {
     price: string;
     nftAddress: string;
@@ -30,6 +31,7 @@ export default function NFTBox({
     marketPlaceAddress: string;
     seller: string;
     getListedNfts: Function;
+    blockTimestamp:number;
 }) {
     const [showModal, setShowModal] = useState(false);
     const { address, isConnected } = useAccount();
@@ -138,6 +140,9 @@ export default function NFTBox({
                     </Skeleton>
                     <Skeleton isLoaded={!isLoading} className="w-4/5 rounded-lg">
                     <small className="text-default-500">Owned by {formattedSellerAddress}</small>
+                    </Skeleton>
+                    <Skeleton isLoaded={!isLoading} className="w-4/5 rounded-lg">
+                    <small className="text-default-500"> {formatTimestamp(blockTimestamp)}</small>
                     </Skeleton>
                 </CardHeader>
                 <CardBody className="overflow-visible py-2">

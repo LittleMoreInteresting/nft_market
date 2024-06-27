@@ -55,7 +55,7 @@ export default function Home() {
                 {!loading && data ? (
                     data.nftListings && data.nftListings.length > 0 ? (
                         data.nftListings .map((nft: any) => {
-                            const {price, nftAddress, tokenId, marketPlaceAddress, seller} =
+                            const {price, nftAddress, tokenId, marketPlaceAddress, seller,blockTimestamp} =
                                 nft;
                             return (
                                 <div className="m-2" key={`${nftAddress}${tokenId}`}>
@@ -67,6 +67,7 @@ export default function Home() {
                                         seller={seller}
                                         key={`${nftAddress}${tokenId}`}
                                         getListedNfts={getListedNfts}
+                                        blockTimestamp={blockTimestamp}
                                     />
                                 </div>
                             );
