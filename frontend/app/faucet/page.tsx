@@ -9,7 +9,7 @@ import {
     useWriteContract
   } from "wagmi";
   import { formatEther } from "viem"
-import { readContract,waitForTransactionReceipt,getBalance } from '@wagmi/core'
+import { readContract,waitForTransactionReceipt,getBalance,getConnectorClient,getAccount } from '@wagmi/core'
 import { wagmiConfig } from "@/app/context/config"
 import { toast } from 'sonner'
 import { tokenAbi } from "@/constants/OBToken.abi"
@@ -17,7 +17,10 @@ import {getTokenAddrByNetworkId} from "@/app/lib/utils/getAddrByNetwork"
 import { transfersQuery } from "@/app/lib/api/thegraph";
 import {truncateStr} from "@/app/lib/utils/utils"
 import { useQuery } from '@apollo/client';
-import { watchAssetERC20 } from "@/app/lib/utils/watchAsset"
+
+import {  watchAsset } from 'viem/actions'
+ 
+
 export default function Faucet(){
     const { address,isConnected } = useAccount();
     const ZERO_ADDR = '0x0000000000000000000000000000000000000000'
@@ -32,6 +35,23 @@ export default function Faucet(){
     const { loading, error:qe, data } = useQuery(transfersQuery,{
         variables:{address}
     });
+    
+    const watchAssetERC20 = async (addr:`0x${string}`,symbol:string,decimals?:number) =>{
+        const { connector } = getAccount(wagmiConfig)
+        console.log(connector)
+        const walletClient = await getConnectorClient(wagmiConfig,{
+            account:address,
+            connector:connector,
+        })
+        await watchAsset(walletClient,{ 
+            type: 'ERC20',
+            options: {
+            address: addr,
+            decimals: decimals?decimals:18,
+            symbol: symbol,
+            },
+        })
+      } 
     const getAccountBalance = async ()=>{
         const balance = await getBalance(wagmiConfig, {
             address:address as `0x${string}`,

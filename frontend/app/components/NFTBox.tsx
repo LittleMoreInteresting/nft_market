@@ -48,7 +48,6 @@ export default function NFTBox({
         },
         retry:1,
     })
-    console.log("price",price)
     const isOwnedByUser =
         seller === address?.toLowerCase() || seller === undefined;
     const formattedSellerAddress = isOwnedByUser
@@ -88,7 +87,6 @@ export default function NFTBox({
         })
          
         const { connector } = getAccount(wagmiConfig)
-        console.log(connector)
         const sign = await signTypedData(wagmiConfig,{
             account:address,
             connector:connector,
